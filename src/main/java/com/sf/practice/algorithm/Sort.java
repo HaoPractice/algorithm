@@ -17,14 +17,20 @@ public class Sort extends BasicTestCase {
 
   // private List<ComparableObject> toSort = new LinkedList<GeneratorCustomer.ComparableObject>();
   private List<ComparableObject> toSort = new ArrayList<Sort.ComparableObject>();
-
-  String HEAP_SORT = "HEAP_SORT";
-  String BUBBLE_SORT = "BUBBLE_SORT";
-  String SELECT_SORT = "SELECT_SORT";
-  String INSERT_SORT = "INSERT_SORT";
-  String SHELL_SORT = "SHELL_SORT";
-  String SHELL_SORT2 = "SHELL_SORT2";
-
+  
+  
+  enum SortModuleName{
+    HEAP_SORT   
+    ,BUBBLE_SORT 
+    ,SELECT_SORT 
+    ,INSERT_SORT 
+    ,SHELL_SORT  
+    ,SHELL_SORT2 
+    ,QUICK_SORT  
+    ,MERGE_SORT
+    ;
+  }
+  
   private long startTime;
   private long swaptimes;
 
@@ -87,11 +93,52 @@ public class Sort extends BasicTestCase {
     }
   }
 
-   @Test
+  @Test
+  public void mergeSort() {
+    System.out.println(SortModuleName.MERGE_SORT);
+    mergeSort(toSort, 0, toSort.size() - 1);
+  }
+
+  @Test
   public void quickSort() {
-//    Collections.sort(toSort);
-//    quickSort(toSort, 0, toSort.size() - 1);
-     quickSortModifiedVersion(toSort, 0, toSort.size() - 1);
+    // Collections.sort(toSort);
+    System.out.println(SortModuleName.QUICK_SORT);
+     quickSort(toSort, 0, toSort.size() - 1);
+//    quickSortModifiedVersion(toSort, 0, toSort.size() - 1);
+  }
+
+  private void mergeSort(List<ComparableObject> toSort2, int from, int to) {
+    if (from >= to) {
+      return;
+    }
+    int mid = (from + to) / 2;
+    // 分解
+    mergeSort(toSort2, from, mid);
+    mergeSort(toSort2, mid + 1, to);
+    
+    // 给每一块排序
+    int nowIndex = from;
+    int left = 0;
+    int right = 0;
+    List<ComparableObject> leftList = new ArrayList<>(toSort2.subList(from, mid+1));
+    List<ComparableObject> rightList = new ArrayList<>(toSort2.subList(mid + 1, to+1));
+
+    while (left < leftList.size() && right < rightList.size()) {
+      if (leftList.get(left).compareTo(rightList.get(right)) > 0) {
+        toSort2.set(nowIndex++, leftList.get(left++));
+      } else {
+        toSort2.set(nowIndex++, rightList.get(right++));
+      }
+    }
+    List<ComparableObject> subList;
+    if (left == leftList.size()) {
+      subList = rightList.subList(right, rightList.size());
+    } else {
+      subList = leftList.subList(left,leftList.size());
+    }
+    for (int j = 0; j < subList.size(); j++) {
+      toSort2.set(nowIndex++, subList.get(j));
+    }
   }
 
   private void quickSort(List<ComparableObject> toSort, int left, int right) {
@@ -99,24 +146,25 @@ public class Sort extends BasicTestCase {
       return;
     }
     ComparableObject p = toSort.get(left);
-    
+
     int i = left;
     int j = right;
-    while(i < j ){
-      while(i < j && toSort.get(j).compareTo(p) > 0){
+    while (i < j) {
+      while (i < j && toSort.get(j).compareTo(p) >= 0) {
         j--;
       }
-      while(i < j && toSort.get(i).compareTo(p) <= 0){
+      while (i < j && toSort.get(i).compareTo(p) <= 0) {
         i++;
       }
       if (i != j) {
         swap(toSort, j, i);
       }
     }
-    swap(toSort, i, left);
-    quickSort(toSort,left,i - 1);
-    quickSort(toSort,i + 1,right);
+    swap(toSort, j, left);
+    quickSort(toSort, left, i - 1);
+    quickSort(toSort, i + 1, right);
   }
+
   private void quickSortModifiedVersion(List<ComparableObject> toSort, int left, int right) {
     if (left >= right) {
       return;
@@ -125,36 +173,38 @@ public class Sort extends BasicTestCase {
     ComparableObject p = toSort.get(position);
     int i = left;
     int j = right;
-    
-//    int leftPoint = i;
-//    int rightPoint = j;
-    while(i < j ){
+
+    // int leftPoint = i;
+    // int rightPoint = j;
+    while (i < j) {
       // 先移动i，会导致排序结果错误
-      while(i < j && toSort.get(i).compareTo(p) <= 0){
+      while (i < j && toSort.get(i).compareTo(p) <= 0) {
         i++;
       }
-//      rightPoint = j;
-      while(i < j && toSort.get(j).compareTo(p) >= 0){
+      // rightPoint = j;
+      while (i < j && toSort.get(j).compareTo(p) >= 0) {
         j--;
       }
       if (i < j) {
         swap(toSort, j, i);
       }
     }
-    
-//    swap(toSort, j, left);　这里是重点，和标志位交换不是因为是i或者j，而是要看：1、标志位是在分界处的左边还是右边；2、在分界处的左边：标志位和分界处左边交换，反之和分界处的右边交换
-    int leftPoint = getLeftPoint(toSort,left,position);
+
+    // swap(toSort, j, left);
+    // 这里是重点，和标志位交换不是因为是i或者j，而是要看：1、标志位是在分界处的左边还是右边；2、在分界处的左边：标志位和分界处左边交换，反之和分界处的右边交换
+    int leftPoint = getLeftPoint(toSort, left, position);
     swap(toSort, leftPoint, position);
-    System.out.println("left:"+leftPoint);
-    System.out.println("j:"+j+",i:"+i);
-    
-    quickSortModifiedVersion(toSort,left,j - 1);
-    quickSortModifiedVersion(toSort,j + 1,right);
+//    System.out.println("left:" + leftPoint);
+//    System.out.println("j:" + j + ",i:" + i);
+
+    quickSortModifiedVersion(toSort, left, j - 1);
+    quickSortModifiedVersion(toSort, j + 1, right);
   }
-  private int getLeftPoint(List<ComparableObject> toSort2,int left , int position) {
+
+  private int getLeftPoint(List<ComparableObject> toSort2, int left, int position) {
     for (int i = left; i < toSort2.size(); i++) {
       ComparableObject comparableObject = toSort2.get(i);
-      if (comparableObject.compareTo(toSort2.get(position))> 0 ) {
+      if (comparableObject.compareTo(toSort2.get(position)) > 0) {
         return i;
       }
     }
@@ -170,15 +220,15 @@ public class Sort extends BasicTestCase {
     System.out.println("***");
     int i = left;
     int j = right;
-    
-    while(i < j ){
+
+    while (i < j) {
       System.out.println("---");
       printResult();
       // 先移动i，会导致排序结果错误
-      while(i < j && toSort.get(i).compareTo(p) <= 0){
+      while (i < j && toSort.get(i).compareTo(p) <= 0) {
         i++;
       }
-      while(i < j && toSort.get(j).compareTo(p) >= 0){
+      while (i < j && toSort.get(j).compareTo(p) >= 0) {
         j--;
       }
       if (i < j) {
@@ -187,20 +237,21 @@ public class Sort extends BasicTestCase {
       printResult();
       System.out.println("---");
     }
-    
-//    swap(toSort, j, left);　这里是重点，和标志位交换不是因为是i或者j，而是要看：1、标志位是在分界处的左边还是右边；2、在分界处的左边：标志位和分界处左边交换，反之和分界处的右边交换
+
+    // swap(toSort, j, left);
+    // 这里是重点，和标志位交换不是因为是i或者j，而是要看：1、标志位是在分界处的左边还是右边；2、在分界处的左边：标志位和分界处左边交换，反之和分界处的右边交换
     swap(toSort, j, left);
-    System.out.println("left:"+left);
-    System.out.println("j:"+j+",i:"+i);
-    
-    quickSortErrorVersion(toSort,left,j - 1);
-    quickSortErrorVersion(toSort,j + 1,right);
+//    System.out.println("left:" + left);
+//    System.out.println("j:" + j + ",i:" + i);
+
+    quickSortErrorVersion(toSort, left, j - 1);
+    quickSortErrorVersion(toSort, j + 1, right);
   }
 
   @Test
   public void heapSort() {
     bigHeap = false;
-    System.out.println(HEAP_SORT);
+    System.out.println(SortModuleName.HEAP_SORT);
     System.out.println("before heapify");
     printResult();
     heapify();
@@ -275,13 +326,13 @@ public class Sort extends BasicTestCase {
   //
   // }
   //
-  
+
   /**
    * it's not bubble sort
    */
-//  @Test
+  // @Test
   public void bubbleSort_err() {
-    System.out.println(BUBBLE_SORT);
+    System.out.println(SortModuleName.BUBBLE_SORT);
     int size = toSort.size();
     for (int i = 1; i < size; i++) {
       for (int j = size - i - 1; j < size - 1; j++) {
@@ -293,17 +344,17 @@ public class Sort extends BasicTestCase {
       }
     }
   }
-  
+
   @Test
   public void bubbleSort() {
-    System.out.println(BUBBLE_SORT);
+    System.out.println(SortModuleName.BUBBLE_SORT);
     int size = toSort.size();
     for (int i = 1; i < size; i += 1) {
       boolean hasSort = false;
-      for (int j = 0; j < size - i; j+=1) {
-        if (toSort.get(j).compareTo(toSort.get(j+1))>0) {
-          swap(toSort,j,j+1);
-          hasSort  = true;
+      for (int j = 0; j < size - i; j += 1) {
+        if (toSort.get(j).compareTo(toSort.get(j + 1)) > 0) {
+          swap(toSort, j, j + 1);
+          hasSort = true;
         }
       }
       if (!hasSort) {
@@ -314,7 +365,7 @@ public class Sort extends BasicTestCase {
 
   @Test
   public void selectSort() {
-    System.out.println(SELECT_SORT);
+    System.out.println(SortModuleName.SELECT_SORT);
     int size = toSort.size();
     for (int i = 0; i < size; i++) {
       int index1 = size - i - 1;
@@ -346,10 +397,10 @@ public class Sort extends BasicTestCase {
   // }
   // }
 
-  
+
   @Test
   public void insertSort() {
-    System.out.println(INSERT_SORT);
+    System.out.println(SortModuleName.INSERT_SORT);
     for (int i = 1; i < toSort.size(); i++) {
       int j = i - 1;
       ComparableObject out = toSort.get(i);
@@ -384,24 +435,25 @@ public class Sort extends BasicTestCase {
 
   @Test
   public void shellSort() {
-    System.out.println(SHELL_SORT);
+    System.out.println(SortModuleName.SHELL_SORT);
     int size = toSort.size();
 
     for (int delta = size / 2; delta > 0; delta /= 2) {
-//      for (int j = 0; j < delta; j++) {
+      // for (int j = 0; j < delta; j++) {
       modInsertSort(toSort, size, delta);
-//      }
+      // }
     }
   }
+
   @Test
   public void shellSort2() {
-    System.out.println(SHELL_SORT2);
+    System.out.println(SortModuleName.SHELL_SORT2);
     int size = toSort.size();
-    
+
     for (int delta = size / 2; delta > 0; delta /= 2) {
-//      for (int j = 0; j < delta; j++) {
+      // for (int j = 0; j < delta; j++) {
       modBubbleSort(toSort, size, delta);
-//      }
+      // }
     }
   }
 
@@ -416,14 +468,14 @@ public class Sort extends BasicTestCase {
       toSort2.set(in + delta, outObject);
     }
   }
-  
+
   private void modBubbleSort(List<ComparableObject> toSort2, int size, int delta) {
     for (int j = delta; j < size; j += delta) {
       boolean hasSort = false;
-      for (int i = 0; i < size - j; i+=delta) {
-        if (toSort2.get(i).compareTo(toSort2.get(i+delta))>0) {
-          swap(toSort2,i ,i+delta);
-          hasSort  = true;
+      for (int i = 0; i < size - j; i += delta) {
+        if (toSort2.get(i).compareTo(toSort2.get(i + delta)) > 0) {
+          swap(toSort2, i, i + delta);
+          hasSort = true;
         }
       }
       if (!hasSort) {
